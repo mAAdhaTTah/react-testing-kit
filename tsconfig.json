@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "lib": ["dom"],
+    "target": "es5",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "jsx": "react"
+  }
+}

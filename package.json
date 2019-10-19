@@ -1,0 +1,29 @@
+{
+  "name": "react-testing-kit",
+  "version": "1.0.0",
+  "description": "",
+  "source": "react-testing-kit.ts",
+  "main": "dist/react-testing-kit.js",
+  "unpkg": "dist/react-testing-kit.umd.js",
+  "scripts": {
+    "dev": "microbundle watch",
+    "build": "microbundle",
+    "format": "prettier --write *.ts*",
+    "test": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "James DiGioia <jamesorodig@gmail.com> (http://jamesdigioia.com)",
+  "license": "ISC",
+  "devDependencies": {
+    "@testing-library/react": "^9.3.0",
+    "@types/jest": "^24.0.19",
+    "@types/react": "^16.9.9",
+    "jest": "^24.9.0",
+    "microbundle": "^0.11.0",
+    "prettier": "^1.18.2",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.6.4"
+  }
+}
