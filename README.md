@@ -1,5 +1,8 @@
 # react-testing-kit
 
+[![Actions Status](https://github.com/mAAdhaTTah/react-testing-kit/workflows/Run tests/badge.svg)](https://github.com/mAAdhaTTah/react-testing-kit/actions)
+
+
 A testing library to enable reusable, readable logic in your unit tests.
 
 ## How to Use
