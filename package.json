@@ -1,6 +1,6 @@
 {
   "name": "react-testing-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "source": "react-testing-kit.ts",
   "main": "dist/react-testing-kit.js",
