@@ -7,10 +7,17 @@
   "unpkg": "dist/react-testing-kit.umd.js",
   "scripts": {
     "dev": "microbundle watch",
-    "build": "microbundle",
+    "build": "rimraf dist && microbundle",
     "format": "prettier --write *.ts*",
-    "test": "jest --coverage"
+    "test": "npm run test:format && npm run test:unit",
+    "test:format": "prettier --check *.ts*",
+    "test:unit": "jest --coverage",
+    "prepublish": "npm test && npm run build"
   },
+  "files": [
+    "dist",
+    "react-testing-kit.ts"
+  ],
   "keywords": [],
   "author": "James DiGioia <jamesorodig@gmail.com> (http://jamesdigioia.com)",
   "license": "ISC",
@@ -23,6 +30,7 @@
     "prettier": "^1.18.2",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
+    "rimraf": "^3.0.0",
     "ts-jest": "^24.1.0",
     "typescript": "^3.6.4"
   }
