@@ -5,6 +5,8 @@
   "source": "react-testing-kit.ts",
   "main": "dist/react-testing-kit.js",
   "unpkg": "dist/react-testing-kit.umd.js",
+  "module": "dist/react-testing-kit.mjs",
+  "types": "dist/react-testing-kit.d.ts",
   "scripts": {
     "dev": "microbundle watch",
     "build": "rimraf dist && microbundle",
@@ -20,6 +22,8 @@
   ],
   "keywords": [],
   "author": "James DiGioia <jamesorodig@gmail.com> (http://jamesdigioia.com)",
+  "homepage": "https://github.com/mAAdhaTTah/react-testing-kit",
+  "repository": "github:mAAdhaTTah/react-testing-kit",
   "license": "ISC",
   "devDependencies": {
     "@testing-library/react": "^9.3.0",
