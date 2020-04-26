@@ -4,7 +4,7 @@ import {
   fireEvent,
   waitForElement,
   waitForElementToBeRemoved,
-  RenderResult
+  RenderResult,
 } from '@testing-library/react';
 import { createRender } from './react-testing-kit';
 
@@ -26,15 +26,15 @@ const renderComponent = createRender({
   // @TODO(mAAdhaTTah) required to get inference working - why?
   elements: (queries: RenderResult) => ({
     button: () => queries.getByTestId('button') as HTMLButtonElement,
-    icon: () => queries.getByTestId('icon') as HTMLSpanElement
+    icon: () => queries.getByTestId('icon') as HTMLSpanElement,
   }),
   fire: elements => ({
-    buttonClick: () => fireEvent.click(elements.button())
+    buttonClick: () => fireEvent.click(elements.button()),
   }),
   waitFor: elements => ({
     icon: () => waitForElement(elements.icon),
-    iconToBeRemoved: () => waitForElementToBeRemoved(elements.icon)
-  })
+    iconToBeRemoved: () => waitForElementToBeRemoved(elements.icon),
+  }),
 });
 
 test('it passes the default props to the component', () => {
@@ -45,7 +45,7 @@ test('it passes the default props to the component', () => {
 
 test('it passes overriden props to the component', () => {
   const instance = renderComponent({
-    text: 'world'
+    text: 'world',
   });
 
   expect(instance.container.textContent).toEqual('world');
