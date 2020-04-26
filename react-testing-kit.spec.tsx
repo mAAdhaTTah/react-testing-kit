@@ -79,3 +79,28 @@ test('it returns the async waits', async () => {
 
   await expect(waitForRemoved).resolves.toEqual(true);
 });
+
+it('accepts a function for props', () => {
+  const renderComponent = createRender({
+    // @TODO(mAAdhaTTah) why cast to any?
+    defaultProps: () => ({ text: 'hello', onClick: jest.fn() as any }),
+    component: TestComponent,
+    render,
+    elements: (queries: RenderResult) => ({
+      button: () => queries.getByTestId('button') as HTMLButtonElement,
+      icon: () => queries.getByTestId('icon') as HTMLSpanElement,
+    }),
+    fire: elements => ({
+      buttonClick: () => fireEvent.click(elements.button()),
+    }),
+    waitFor: elements => ({
+      icon: () => waitForElement(elements.icon),
+      iconToBeRemoved: () => waitForElementToBeRemoved(elements.icon),
+    }),
+  });
+
+  const first = renderComponent();
+  const second = renderComponent();
+
+  expect(first.props).not.toBe(second.props);
+});

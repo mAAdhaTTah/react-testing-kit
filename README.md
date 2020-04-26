@@ -76,7 +76,7 @@ This encourages a test API that's consistent, making complex tests more readable
 
 Create a render function for use in a test. `config` takes these properties:
 
-* `defaultProps`: The properties the component should be rendered with by default.
+* `defaultProps`: The properties the component should be rendered with by default. Can also be provided as a function which will be called on each render.
 * `component`: The component to test.
 * `render`: The render function to create an instance.
 * `elements`: Function to create the component elements.
