@@ -9,7 +9,7 @@
   "types": "dist/react-testing-kit.d.ts",
   "scripts": {
     "dev": "microbundle watch",
-    "build": "rimraf dist && microbundle",
+    "build": "rimraf dist && microbundle --no-compress --external react,@testing-library/react",
     "format": "prettier --write *.ts*",
     "test": "npm run test:format && npm run test:unit",
     "test:format": "prettier --check *.ts*",
@@ -25,6 +25,10 @@
   "homepage": "https://github.com/mAAdhaTTah/react-testing-kit",
   "repository": "github:mAAdhaTTah/react-testing-kit",
   "license": "ISC",
+  "peerDependencies": {
+    "@testing-library/react": "^8 || ^9 || ^10",
+    "react": "^16.0.0"
+  },
   "devDependencies": {
     "@testing-library/react": "^9.3.0",
     "@types/jest": "^24.0.19",
