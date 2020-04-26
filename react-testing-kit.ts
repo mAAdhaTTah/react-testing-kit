@@ -2,7 +2,7 @@ import React from 'react';
 import { RenderResult } from '@testing-library/react';
 
 interface RenderConfig<P, E, F, A> {
-  defaultProps: P;
+  defaultProps: P | (() => P);
   component: React.ComponentType<P>;
   render: (ui: React.ReactElement<P>) => RenderResult;
   elements: (queries: RenderResult) => E;
@@ -33,7 +33,13 @@ export const createRender = <P, E, F, A>({
 }: RenderConfig<P, E, F, A>) => (
   overrides: Partial<P> = {},
 ): RenderInstance<P, E, F, A> => {
-  const props: P = { ...defaultProps, ...overrides };
+  const props: P = {
+    // @TODO(mAAdhaTTaah) remove cast?
+    ...(typeof defaultProps === 'function'
+      ? (defaultProps as any)()
+      : defaultProps),
+    ...overrides,
+  };
   const queries = render(React.createElement(component, props));
   const elements = getElements(queries);
   const fire = getEvents(elements);
