@@ -29,9 +29,9 @@ export const createRender = <P, E, F, A>({
   render,
   elements: getElements,
   fire: getEvents,
-  waitFor: getAsync
+  waitFor: getAsync,
 }: RenderConfig<P, E, F, A>) => (
-  overrides: Partial<P> = {}
+  overrides: Partial<P> = {},
 ): RenderInstance<P, E, F, A> => {
   const props: P = { ...defaultProps, ...overrides };
   const queries = render(React.createElement(component, props));
@@ -45,7 +45,7 @@ export const createRender = <P, E, F, A>({
     debug,
     rerender,
     unmount,
-    asFragment
+    asFragment,
   } = queries;
 
   return {
@@ -58,6 +58,6 @@ export const createRender = <P, E, F, A>({
     asFragment,
     elements,
     fire,
-    waitFor
+    waitFor,
   };
 };
