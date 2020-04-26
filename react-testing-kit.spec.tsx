@@ -80,7 +80,7 @@ test('it returns the async waits', async () => {
   await expect(waitForRemoved).resolves.toEqual(true);
 });
 
-it('accepts a function for props', () => {
+test('it accepts a function for props', () => {
   const renderComponent = createRender({
     // @TODO(mAAdhaTTah) why cast to any?
     defaultProps: () => ({ text: 'hello', onClick: jest.fn() as any }),
@@ -103,4 +103,21 @@ it('accepts a function for props', () => {
   const second = renderComponent();
 
   expect(first.props).not.toBe(second.props);
+});
+
+test('fire and waitFor are optional', () => {
+  const renderComponent = createRender({
+    defaultProps: { text: 'hello', onClick: jest.fn() },
+    component: TestComponent,
+    render,
+    // @TODO(mAAdhaTTah) required to get inference working - why?
+    elements: (queries: RenderResult) => ({
+      button: () => queries.getByTestId('button') as HTMLButtonElement,
+      icon: () => queries.getByTestId('icon') as HTMLSpanElement,
+    }),
+  });
+
+  const instance = renderComponent();
+
+  expect(instance.container.textContent).toEqual('hello');
 });
