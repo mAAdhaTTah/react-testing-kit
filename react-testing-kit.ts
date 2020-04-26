@@ -6,11 +6,11 @@ interface RenderConfig<P, E, F, A> {
   component: React.ComponentType<P>;
   render: (ui: React.ReactElement<P>) => RenderResult;
   elements: (queries: RenderResult) => E;
-  fire: (elements: E) => F;
-  waitFor: (elements: E) => A;
+  fire?: (elements: E) => F;
+  waitFor?: (elements: E) => A;
 }
 
-interface RenderInstance<P, E, F, A> {
+interface RenderInstance<P, E, F = {}, A = {}> {
   props: P;
   container: RenderResult['container'];
   baseElement: RenderResult['baseElement'];
@@ -42,8 +42,8 @@ export const createRender = <P, E, F, A>({
   };
   const queries = render(React.createElement(component, props));
   const elements = getElements(queries);
-  const fire = getEvents(elements);
-  const waitFor = getAsync(elements);
+  const fire = getEvents != null ? getEvents(elements) : ({} as F);
+  const waitFor = getAsync != null ? getAsync(elements) : ({} as A);
 
   const {
     container,

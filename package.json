@@ -14,7 +14,7 @@
     "test": "npm run test:format && npm run test:unit",
     "test:format": "prettier --check *.ts*",
     "test:unit": "jest --coverage",
-    "prepublish": "npm test && npm run build"
+    "prepublishOnly": "npm test && npm run build"
   },
   "files": [
     "dist",
@@ -40,6 +40,6 @@
     "react-dom": "^16.10.2",
     "rimraf": "^3.0.0",
     "ts-jest": "^25.0.0",
-    "typescript": "^3.6.4"
+    "typescript": "^3.8.0"
   }
 }
