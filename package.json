@@ -26,11 +26,11 @@
   "repository": "github:mAAdhaTTah/react-testing-kit",
   "license": "ISC",
   "peerDependencies": {
-    "@testing-library/react": "^8 || ^9 || ^10",
+    "@testing-library/react": "^8 || ^9 || ^10 || ^11",
     "react": "^16.0.0"
   },
   "devDependencies": {
-    "@testing-library/react": "^10.0.3",
+    "@testing-library/react": "^11.0.0",
     "@types/jest": "^26.0.14",
     "@types/react": "^16.9.9",
     "jest": "^25.0.0",

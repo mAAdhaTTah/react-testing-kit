@@ -96,5 +96,5 @@ test('it returns the async waits', async () => {
   const waitForIconRemoved = run.waitFor.iconToBeRemoved();
   run.queries.rerender(<TestComponent {...run.props} />);
 
-  await expect(waitForIconRemoved).resolves.toEqual(true);
+  await expect(waitForIconRemoved).resolves.toBeUndefined();
 });
