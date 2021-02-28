@@ -2,122 +2,99 @@ import React from 'react';
 import {
   render,
   fireEvent,
-  waitForElement,
   waitForElementToBeRemoved,
-  RenderResult,
 } from '@testing-library/react';
-import { createRender } from './react-testing-kit';
+import { Kit } from './react-testing-kit';
 
-const TestComponent: React.FC<{
+type Props = {
   icon?: string;
   text: string;
   onClick: () => void;
-}> = ({ icon = null, text, onClick }) => (
+};
+
+const TestComponent: React.FC<Props> = ({ icon = null, text, onClick }) => (
   <button data-testid="button" onClick={onClick}>
     {icon && <span data-testid="icon">{icon}</span>}
     {text}
   </button>
 );
 
-const renderComponent = createRender({
-  defaultProps: { text: 'hello', onClick: jest.fn() },
-  component: TestComponent,
-  render,
-  // @TODO(mAAdhaTTah) required to get inference working - why?
-  elements: (queries: RenderResult) => ({
-    button: () => queries.getByTestId('button') as HTMLButtonElement,
-    icon: () => queries.getByTestId('icon') as HTMLSpanElement,
-  }),
-  fire: elements => ({
+const customRender = (ui: React.ReactElement) => render(ui);
+
+const baseKit = Kit.create(customRender, TestComponent, () => ({
+  text: 'hello',
+  onClick: jest.fn(),
+}));
+const kit = baseKit
+  .setElements(rr => ({
+    button: () => rr.getByTestId('button') as HTMLButtonElement,
+    icon: () => rr.getByTestId('icon') as HTMLSpanElement,
+    iconAsync: () => rr.findByTestId('icon') as Promise<HTMLSpanElement>,
+  }))
+  .setFire(elements => ({
     buttonClick: () => fireEvent.click(elements.button()),
-  }),
-  waitFor: elements => ({
-    icon: () => waitForElement(elements.icon),
+  }))
+  .setAsync(elements => ({
     iconToBeRemoved: () => waitForElementToBeRemoved(elements.icon),
-  }),
+  }));
+
+test('it can prebind to render', () => {
+  const run = Kit.withRender(customRender)
+    .create(TestComponent, () => ({
+      text: 'hello',
+      onClick: jest.fn(),
+    }))
+    .run();
+
+  expect(run.queries.container.textContent).toEqual('hello');
+});
+
+test('it does not require anything set', () => {
+  const run = baseKit.run();
+
+  expect(run.queries.container.textContent).toEqual('hello');
 });
 
 test('it passes the default props to the component', () => {
-  const instance = renderComponent();
+  const run = kit.run();
 
-  expect(instance.container.textContent).toEqual('hello');
+  expect(run.queries.container.textContent).toEqual('hello');
 });
 
 test('it passes overriden props to the component', () => {
-  const instance = renderComponent({
+  const run = kit.run({
     text: 'world',
   });
 
-  expect(instance.container.textContent).toEqual('world');
+  expect(run.queries.container.textContent).toEqual('world');
 });
 
 test('it returns the element queries', () => {
-  const instance = renderComponent();
-  const button = instance.elements.button();
+  const run = kit.run();
+
+  const button = run.elements.button();
 
   expect(button.getAttribute('data-testid')).toEqual('button');
 });
 
 test('it returns the event fires', () => {
-  const instance = renderComponent();
+  const run = kit.run();
 
-  instance.fire.buttonClick();
+  run.fire.buttonClick();
 
-  expect(instance.props.onClick).toHaveBeenCalledTimes(1);
+  expect(run.props.onClick).toHaveBeenCalledTimes(1);
 });
 
 test('it returns the async waits', async () => {
-  const instance = renderComponent();
-  const waitFor = instance.waitFor.icon();
-  instance.rerender(<TestComponent {...instance.props} icon="👍" />);
-  const icon = await waitFor;
+  const run = kit.run();
+  const waitForIcon = run.elements.iconAsync();
+  run.queries.rerender(<TestComponent {...run.props} icon="👍" />);
+  const icon = await waitForIcon;
 
   expect(icon.getAttribute('data-testid')).toEqual('icon');
 
-  const waitForRemoved = instance.waitFor.iconToBeRemoved();
-  instance.rerender(<TestComponent {...instance.props} />);
+  const waitForIconRemoved = run.waitFor.iconToBeRemoved();
+  run.queries.rerender(<TestComponent {...run.props} />);
 
-  await expect(waitForRemoved).resolves.toEqual(true);
-});
-
-test('it accepts a function for props', () => {
-  const renderComponent = createRender({
-    // @TODO(mAAdhaTTah) why cast to any?
-    defaultProps: () => ({ text: 'hello', onClick: jest.fn() as any }),
-    component: TestComponent,
-    render,
-    elements: (queries: RenderResult) => ({
-      button: () => queries.getByTestId('button') as HTMLButtonElement,
-      icon: () => queries.getByTestId('icon') as HTMLSpanElement,
-    }),
-    fire: elements => ({
-      buttonClick: () => fireEvent.click(elements.button()),
-    }),
-    waitFor: elements => ({
-      icon: () => waitForElement(elements.icon),
-      iconToBeRemoved: () => waitForElementToBeRemoved(elements.icon),
-    }),
-  });
-
-  const first = renderComponent();
-  const second = renderComponent();
-
-  expect(first.props).not.toBe(second.props);
-});
-
-test('fire and waitFor are optional', () => {
-  const renderComponent = createRender({
-    defaultProps: { text: 'hello', onClick: jest.fn() },
-    component: TestComponent,
-    render,
-    // @TODO(mAAdhaTTah) required to get inference working - why?
-    elements: (queries: RenderResult) => ({
-      button: () => queries.getByTestId('button') as HTMLButtonElement,
-      icon: () => queries.getByTestId('icon') as HTMLSpanElement,
-    }),
-  });
-
-  const instance = renderComponent();
-
-  expect(instance.container.textContent).toEqual('hello');
+  await expect(waitForIconRemoved).resolves.toEqual(true);
 });
