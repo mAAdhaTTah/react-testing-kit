@@ -1,69 +1,96 @@
-import React from 'react';
-import { RenderResult } from '@testing-library/react';
+import { createElement } from 'react';
 
-interface RenderConfig<P, E, F, A> {
-  defaultProps: P | (() => P);
-  component: React.ComponentType<P>;
-  render: (ui: React.ReactElement<P>) => RenderResult;
-  elements: (queries: RenderResult) => E;
-  fire?: (elements: E) => F;
-  waitFor?: (elements: E) => A;
+type Renderer<RR> = (ui: React.ReactElement) => RR;
+
+export class Kit<RR, P, E = {}, F = {}, A = {}> {
+  static create<RR, P>(
+    render: Renderer<RR>,
+    component: React.ComponentType<P>,
+    defaultProps: () => P,
+  ) {
+    return new Kit(render, component, defaultProps);
+  }
+
+  static withRender<WRR>(render: Renderer<WRR>) {
+    return {
+      create<CP>(component: React.ComponentType<CP>, defaultProps: () => CP) {
+        return Kit.create<WRR, CP>(render, component, defaultProps);
+      },
+    };
+  }
+
+  private elements?: (rr: RR) => E;
+  private fire?: (e: E) => F;
+  private async?: (e: E) => A;
+
+  protected constructor(
+    private render: Renderer<RR>,
+    private component: React.ComponentType<P>,
+    private defaultProps: () => P,
+  ) {}
+
+  setElements<NE extends E>(elements: (renderResult: RR) => NE) {
+    const kit = new Kit(this.render, this.component, this.defaultProps) as Kit<
+      RR,
+      P,
+      NE,
+      F,
+      A
+    >;
+    kit.elements = elements;
+    kit.fire = this.fire;
+    kit.async = this.async;
+
+    return kit;
+  }
+
+  setFire<NF extends F>(fire: (renderResult: E) => NF) {
+    const kit = new Kit(this.render, this.component, this.defaultProps) as Kit<
+      RR,
+      P,
+      E,
+      NF,
+      A
+    >;
+    kit.elements = this.elements;
+    kit.fire = fire;
+    kit.async = this.async;
+
+    return kit;
+  }
+
+  setAsync<NA extends A>(async: (e: E) => NA) {
+    const kit = new Kit(this.render, this.component, this.defaultProps) as Kit<
+      RR,
+      P,
+      E,
+      F,
+      NA
+    >;
+    kit.elements = this.elements;
+    kit.fire = this.fire;
+    kit.async = async;
+
+    return kit;
+  }
+
+  run(overrides: Partial<P> = {}) {
+    const props = { ...this.defaultProps(), ...overrides };
+    const queries = this.render(createElement(this.component, props));
+    const elements = this.elements?.(queries) ?? ({} as E);
+    const fire = this.fire?.(elements) ?? ({} as F);
+    const waitFor = this.async?.(elements) ?? ({} as A);
+
+    return new RunInstance(props, queries, elements, fire, waitFor);
+  }
 }
 
-interface RenderInstance<P, E, F = {}, A = {}> {
-  props: P;
-  container: RenderResult['container'];
-  baseElement: RenderResult['baseElement'];
-  debug: RenderResult['debug'];
-  rerender: RenderResult['rerender'];
-  unmount: RenderResult['unmount'];
-  asFragment: RenderResult['asFragment'];
-  elements: E;
-  fire: F;
-  waitFor: A;
+class RunInstance<P, Q, E, F, A> {
+  constructor(
+    public props: P,
+    public queries: Q,
+    public elements: E,
+    public fire: F,
+    public waitFor: A,
+  ) {}
 }
-
-export const createRender = <P, E, F, A>({
-  defaultProps,
-  component,
-  render,
-  elements: getElements,
-  fire: getEvents,
-  waitFor: getAsync,
-}: RenderConfig<P, E, F, A>) => (
-  overrides: Partial<P> = {},
-): RenderInstance<P, E, F, A> => {
-  const props: P = {
-    // @TODO(mAAdhaTTaah) remove cast?
-    ...(typeof defaultProps === 'function'
-      ? (defaultProps as any)()
-      : defaultProps),
-    ...overrides,
-  };
-  const queries = render(React.createElement(component, props));
-  const elements = getElements(queries);
-  const fire = getEvents != null ? getEvents(elements) : ({} as F);
-  const waitFor = getAsync != null ? getAsync(elements) : ({} as A);
-
-  const {
-    container,
-    baseElement,
-    debug,
-    rerender,
-    unmount,
-    asFragment,
-  } = queries;
-
-  return {
-    props,
-    container,
-    baseElement,
-    debug,
-    rerender,
-    unmount,
-    asFragment,
-    elements,
-    fire,
-    waitFor,
-  };
-};

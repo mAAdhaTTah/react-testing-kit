@@ -9,7 +9,7 @@
   "types": "dist/react-testing-kit.d.ts",
   "scripts": {
     "dev": "microbundle watch",
-    "build": "rimraf dist && microbundle --no-compress --external react,@testing-library/react",
+    "build": "rimraf dist && microbundle --no-compress --external react",
     "format": "prettier --write *.ts*",
     "test": "npm run test:format && npm run test:unit",
     "test:format": "prettier --check *.ts*",

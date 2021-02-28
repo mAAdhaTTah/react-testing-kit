@@ -17,73 +17,109 @@ yarn --dev react-testing-kit
 Import it into your tests:
 
 ```js
-import { createRender } from 'react-testing-library';
-import { render, fireEvent, waitForElement, waitForElementToBeRemoved } '@testing-library/react';
+import { Kit } from 'react-testing-kit';
+import { render, fireEvent, waitFor, waitForElementToBeRemoved } '@testing-library/react';
 ```
 
-Create your reusable render function.
+Create your test kit.
 
 ```js
-const renderComponent = createRender({
-  defaultProps: {
-    // ...
-  },
-  component: TestComponent,
-  render,
-  elements: queries => ({
-    button: () => queries.getByTestId('button')
-  }),
-  fire: elements => ({
-    buttonClick: () => fireEvent.click(elements.button())
-  }),
-  waitFor: elements => ({
-    button: () => waitForElement(elements.button),
-    buttonToBeRemoved: () => waitForElementToBeRemoved(elements.button)
-  })
-});
+const kit = Kit.create(render, MyComponent, () => ({
+  // Default props
+}))
+  .setElements(queries => ({
+    button: () => queries.getByTestId('button'),
+  }))
+  .setFire(elements => ({
+    buttonClick: () => fireEvent.click(elements.button()),
+  }))
+  .setAsync(elements => ({
+    buttonToBeRemoved: () => waitForElementToBeRemoved(elements.button),
+  }));
 ```
 
-Create an instance of the component. You can override any default props by passing in those values.
+Create an instance of the kit. You can override any default props by passing in those values.
 
 ```js
-const { container, elements, fire, waitFor } = renderComponent({
-  // ...
+const run = kit.run({
+  // ... overridden props
 });
 ```
 
 Test the component instance.
 
 ```js
-const button = elements.button();
-fire.buttonClick();
-await waitFor.button();
-await waitFor.buttonToBeRemoved();
-expect(container).toMatchSnapshot();
+const button = run.elements.button();
+run.fire.buttonClick();
+await run.waitFor.button();
+await run.waitFor.buttonToBeRemoved();
+expect(run.queries.container).toMatchSnapshot();
 ```
 
 ## How It Works
 
-The created `renderComponent` function will render the component with the provided render function and return it composed with the provided functions.
+The created `kit` ties together the component to a reusable set of a functions that can be shared across test runs. This instance is typesafe, enabling a structure for interacting with a rendered components.
 
 `elements` is called with the return of `render`, enabling the creation of functions to fetch particular elements in the component. These `elements` are then passed to `fire` & `waitFor`, allowing those elements to be bound to particular interactions.
 
-This encourages a test API that's consistent, making complex tests more readable by providing named functions instead of a complex binding between RTL's queries & `fireEvent`. It also removes the ability to write custom queries & events in your tests, ensuring the bare minimum amount of logic is in your tests.
-
+This encourages a test API that's consistent, making complex tests more readable by providing named functions instead of a complex binding between RTL's queries & `fireEvent`. It also limits the ability to write custom queries & events in your tests, ensuring simple, readable logic in your tests.
 
 ## API
 
-### `createRender` - `(config: RenderConfig) => RenderFunction`
+### `Kit`
 
-Create a render function for use in a test. `config` takes these properties:
+Base class that provides the structure for a test kit. The basic API is as follows:
 
-* `defaultProps`: The properties the component should be rendered with by default. Can also be provided as a function which will be called on each render.
-* `component`: The component to test.
-* `render`: The render function to create an instance.
-* `elements`: Function to create the component elements.
-* `fire`: Function to create the component events.
-* `waitFor`: Function to create async events.
+#### `Kit#create`
 
-The `RenderFunction` accepts any component property overrides. The returned instance has these properties:
+Static method to create a new test kit. Accepts a custom render function, the component under test, and a function to generate default props for the component.
 
-* `container`, `baseElement`, `debug`, `rerender`, `unmount`, `asFragment`: API from RTL.
-* `elements`, `fire`, `waitFor`: Result of calling above functions.
+```ts
+let kit = Kit.create(render, TestComponent, () => ({}));
+```
+
+#### `kit.setElements`
+
+Set the function that will create the `elements` property on the `RunInstance`. It will receive the return value of the `render` function and should return an object with methods to query interesting elements in your component. It will return a new `kit` instance, allowing you to fluently build up your testing kit in a typesafe way.
+
+```ts
+kit = kit.setElements(queries => ({
+  button: () => queries.getByLabelText('Click me'),
+}));
+```
+
+#### `kit.setFire`
+
+Set the function that will create the `fire` property on the `RunInstance`. It will receive the return value of the `setElements` function and should return an object with methods to fire interesting events on the elements in your component. It will return a new `kit` instance, allowing you to fluently build up your testing kit in a typesafe way.
+
+```ts
+kit = kit.setFire(elements => ({
+  buttonClick: () => fireEvent.click(elements.button()),
+}));
+```
+
+#### `kit.setAsync`
+
+Set the function that will create the `waitFor` property on the `RunInstance`. It will receive the return value of the `setElements` function and should return an object with methods to fire interesting events on the elements in your component. It will return a new `kit` instance, allowing you to fluently build up your testing kit in a typesafe way.
+
+```ts
+kit = kit.setAsync(elements => ({
+  buttonToBeRemoved: () => waitForElementToBeRemoved(elements.button),
+}));
+```
+
+#### `kit.run`
+
+Run the test kit and create a new RunInstance. Accepts an object of props to override from the default props. This RunInstance will have the following properties:
+
+- `props` - The result of combining the component props & its overrides.
+- `queries` - The result of the provided `render` function.
+- `elements` - The result of the function provided to `setElements`.
+- `fire` - The result of the function provided to `setFire`.
+- `waitFor` - The result of the function provided to `setAsync`.
+
+```ts
+const run = kit.run({
+  // ... override props
+});
+```
