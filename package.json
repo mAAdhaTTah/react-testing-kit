@@ -27,7 +27,7 @@
   "license": "ISC",
   "peerDependencies": {
     "@testing-library/react": "^8 || ^9 || ^10 || ^11",
-    "react": "^16.0.0"
+    "react": "^16 || ^17"
   },
   "devDependencies": {
     "@testing-library/react": "^11.0.0",
