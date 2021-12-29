@@ -3,23 +3,32 @@ name: Run tests
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node: ['10.x', '12.x', '14.x', '16.x']
+        rtl: ['^8', '^9', '^10', '^11', '^12']
+        react: ['^16', '^17']
+
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-    - run: npm ci
-    - run: npm test
-      env:
-        CI: true
-    - run: npm run build
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm i @testing-library/react@${{ matrix.rtl }} react@${{ matrix.react }} react-dom@${{ matrix.react }}
+      - run: npm test
+        env:
+          CI: true
+          RTL_VERSION: ${{ matrix.rtl }}
+          NODE_VERSION: ${{ matrix.node }}
+          REACT_VERSION: ${{ matrix.react }}
+      - run: npm run build
