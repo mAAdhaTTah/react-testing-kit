@@ -3,6 +3,7 @@ import {
   render,
   fireEvent,
   waitForElementToBeRemoved,
+  cleanup,
 } from '@testing-library/react';
 import { Kit } from './react-testing-kit';
 
@@ -37,6 +38,8 @@ const kit = baseKit
   .setAsync(elements => ({
     iconToBeRemoved: () => waitForElementToBeRemoved(elements.icon),
   }));
+
+afterEach(cleanup);
 
 test('it can prebind to render', () => {
   const run = Kit.withRender(customRender)
@@ -96,5 +99,10 @@ test('it returns the async waits', async () => {
   const waitForIconRemoved = run.waitFor.iconToBeRemoved();
   run.queries.rerender(<TestComponent {...run.props} />);
 
-  await expect(waitForIconRemoved).resolves.toBeUndefined();
+  // RTL 8 & 9 resolves this promise differently
+  if (process.env.RTL_VERSION === '^8' || process.env.RTL_VERSION === '^9') {
+    await expect(waitForIconRemoved).resolves.toBe(true);
+  } else {
+    await expect(waitForIconRemoved).resolves.toBeUndefined();
+  }
 });
