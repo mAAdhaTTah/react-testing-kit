@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
-      - run: npm i @testing-library/react@${{ matrix.rtl }} react@${{ matrix.react }} react-dom@${{ matrix.react }}
+      - run: npm i --save=false @testing-library/react@${{ matrix.rtl }} react@${{ matrix.react }} react-dom@${{ matrix.react }}
       - run: npm test
         env:
           CI: true
