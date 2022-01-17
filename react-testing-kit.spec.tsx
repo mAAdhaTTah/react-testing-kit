@@ -4,6 +4,7 @@ import {
   fireEvent,
   waitForElementToBeRemoved,
   cleanup,
+  RenderOptions,
 } from '@testing-library/react';
 import { Kit } from './react-testing-kit';
 
@@ -20,7 +21,8 @@ const TestComponent: React.FC<Props> = ({ icon = null, text, onClick }) => (
   </button>
 );
 
-const customRender = (ui: React.ReactElement) => render(ui);
+const customRender = (ui: React.ReactElement, opts?: RenderOptions) =>
+  render(ui, opts);
 
 const baseKit = Kit.create(customRender, TestComponent, () => ({
   text: 'hello',
@@ -70,6 +72,19 @@ test('it passes overriden props to the component', () => {
   });
 
   expect(run.queries.container.textContent).toEqual('world');
+});
+
+test('it passes options to the component', () => {
+  const run = kit.run(
+    {
+      text: 'world',
+    },
+    {
+      wrapper: ({ children }) => <div data-testid="wrapper">{children}</div>,
+    },
+  );
+
+  expect(run.queries.getByTestId('wrapper')).not.toBeNull();
 });
 
 test('it returns the element queries', () => {

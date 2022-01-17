@@ -1,20 +1,23 @@
 import { createElement } from 'react';
 
-type Renderer<RR> = (ui: React.ReactElement) => RR;
+type Renderer<RR, RO = undefined> = (
+  ui: React.ReactElement,
+  options?: RO,
+) => RR;
 
-export class Kit<RR, P, E = {}, F = {}, A = {}> {
-  static create<RR, P>(
-    render: Renderer<RR>,
+export class Kit<RR, RO, P, E = {}, F = {}, A = {}> {
+  static create<RR, RO, P>(
+    render: Renderer<RR, RO>,
     component: React.ComponentType<P>,
     defaultProps: () => P,
   ) {
     return new Kit(render, component, defaultProps);
   }
 
-  static withRender<WRR>(render: Renderer<WRR>) {
+  static withRender<WRR, RO>(render: Renderer<WRR, RO>) {
     return {
       create<CP>(component: React.ComponentType<CP>, defaultProps: () => CP) {
-        return Kit.create<WRR, CP>(render, component, defaultProps);
+        return Kit.create<WRR, RO, CP>(render, component, defaultProps);
       },
     };
   }
@@ -24,7 +27,7 @@ export class Kit<RR, P, E = {}, F = {}, A = {}> {
   private async?: (e: E) => A;
 
   protected constructor(
-    private render: Renderer<RR>,
+    private render: Renderer<RR, RO>,
     private component: React.ComponentType<P>,
     private defaultProps: () => P,
   ) {}
@@ -32,6 +35,7 @@ export class Kit<RR, P, E = {}, F = {}, A = {}> {
   setElements<NE extends E>(elements: (renderResult: RR) => NE) {
     const kit = new Kit(this.render, this.component, this.defaultProps) as Kit<
       RR,
+      RO,
       P,
       NE,
       F,
@@ -47,6 +51,7 @@ export class Kit<RR, P, E = {}, F = {}, A = {}> {
   setFire<NF extends F>(fire: (renderResult: E) => NF) {
     const kit = new Kit(this.render, this.component, this.defaultProps) as Kit<
       RR,
+      RO,
       P,
       E,
       NF,
@@ -62,6 +67,7 @@ export class Kit<RR, P, E = {}, F = {}, A = {}> {
   setAsync<NA extends A>(async: (e: E) => NA) {
     const kit = new Kit(this.render, this.component, this.defaultProps) as Kit<
       RR,
+      RO,
       P,
       E,
       F,
@@ -74,9 +80,12 @@ export class Kit<RR, P, E = {}, F = {}, A = {}> {
     return kit;
   }
 
-  run(overrides: Partial<P> = {}) {
+  run(overrides: Partial<P> = {}, renderOptions?: RO) {
     const props = { ...this.defaultProps(), ...overrides };
-    const queries = this.render(createElement(this.component, props));
+    const queries = this.render(
+      createElement(this.component, props),
+      renderOptions,
+    );
     const elements = this.elements?.(queries) ?? ({} as E);
     const fire = this.fire?.(elements) ?? ({} as F);
     const waitFor = this.async?.(elements) ?? ({} as A);
